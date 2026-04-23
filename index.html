@@ -148,13 +148,23 @@
     const html5QrCode = new Html5Qrcode("reader");
 
     async function startScanner() {
-        // मोबाईलवर मागचा कॅमेरा (Environment Mode) वापरणे
-        const config = { 
-            fps: 15, 
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0 
-        };
-        
+       function startScanner() {
+    if(isScanning) return;
+    
+    // कॅमेरा सिलेक्ट करण्यासाठी अधिक चांगला पर्याय
+    Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+            let cameraId = devices[devices.length - 1].id; // शेवटचा कॅमेरा म्हणजे बॅक कॅमेरा
+            html5QrCode.start(
+                cameraId, 
+                { fps: 15, qrbox: { width: 250, height: 250 } },
+                (decodedText) => { processData(decodedText); }
+            ).then(() => isScanning = true);
+        }
+    }).catch(err => {
+        alert("कॅमेरा एरर: " + err);
+    });
+}
         try {
             await html5QrCode.start(
                 { facingMode: "environment" }, 
