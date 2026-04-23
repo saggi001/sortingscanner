@@ -2,257 +2,54 @@
 <html lang="mr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PMJAY Pro Scanner v2.0</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSMC Scanner</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <style>
-        :root {
-            --primary-color: #007bff;
-            --dark-bg: #1e1e2f;
-        }
-
-        body {
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            overflow-x: hidden;
-        }
-
-        .header-section {
-            background: linear-gradient(135deg, #007bff 0%, #003366 100%);
-            color: white;
-            padding: 20px 10px;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            margin-bottom: 20px;
-        }
-
-        /* मोबाईलवर स्कॅनर मोठा दिसण्यासाठी */
-        #reader {
-            width: 100% !important;
-            border: none !important;
-            border-radius: 15px;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .scanner-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            margin: 10px;
-            padding: 10px;
-        }
-
-        .btn-action {
-            border-radius: 10px;
-            padding: 10px;
-            font-weight: 600;
-            margin: 5px;
-            flex: 1; /* बटणे एका ओळीत बसण्यासाठी */
-            font-size: 14px;
-        }
-
-        .stats-badge {
-            background: #e7f1ff;
-            color: #007bff;
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        .table-container {
-            background: white;
-            margin: 10px;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        /* मोबाईलवर टेबल वाचायला सोपे जावे म्हणून */
-        .table-responsive {
-            font-size: 13px;
-        }
-
-        #reader__dashboard_section_csr button {
-            background-color: #007bff !important;
-            color: white !important;
-            border-radius: 5px !important;
-            padding: 5px 10px !important;
-            border: none !important;
-        }
+        body { background: #0a192f; color: white; text-align: center; font-family: sans-serif; }
+        #reader { width: 100%; max-width: 400px; margin: 20px auto; border: 2px solid #00f2ff; border-radius: 10px; overflow: hidden; background: black; }
+        .btn { background: #00f2ff; color: black; border: none; padding: 15px 30px; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header-section text-center">
-    <h4 class="mb-1"><i class="fas fa-id-card-alt me-2"></i> PMJAY SMART SORTING</h4>
-    <p class="small mb-0">Digital Health Card Manager</p>
-</div>
-
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-6">
-            <div class="scanner-card text-center">
-                <div id="reader"></div>
-                <div class="mt-3">
-                    <div class="stats-badge">
-                        <i class="fas fa-database me-2"></i> एकूण स्कॅन: <span id="count">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-primary btn-action" onclick="startScanner()">
-                            <i class="fas fa-camera"></i> सुरू करा
-                        </button>
-                        <button class="btn btn-success btn-action" onclick="downloadExcel()">
-                            <i class="fas fa-file-excel"></i> Excel
-                        </button>
-                        <button class="btn btn-danger btn-action" onclick="clearData()">
-                            <i class="fas fa-trash"></i> रिसेट
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <div class="table-container mb-5">
-                <h6 class="fw-bold mb-3"><i class="fas fa-list me-2"></i> स्कॅन केलेला डेटा</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>नाव / ID</th>
-                                <th>पत्ता / मोबाईल</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody">
-                            <tr>
-                                <td colspan="2" class="text-center text-muted">अजून डेटा स्कॅन केलेला नाही...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <h2>CSMC Smart Scanner</h2>
+    <div id="reader"></div>
+    <button class="btn" id="start-btn" onclick="initScanner()">कॅमेरा सुरू करा</button>
+    <div id="result" style="margin-top: 20px;"></div>
 
 <script>
-    let masterData = [];
     const html5QrCode = new Html5Qrcode("reader");
 
-    async function startScanner() {
-       function startScanner() {
-    if(isScanning) return;
-    
-    // कॅमेरा सिलेक्ट करण्यासाठी अधिक चांगला पर्याय
-    Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length) {
-            let cameraId = devices[devices.length - 1].id; // शेवटचा कॅमेरा म्हणजे बॅक कॅमेरा
-            html5QrCode.start(
-                cameraId, 
-                { fps: 15, qrbox: { width: 250, height: 250 } },
-                (decodedText) => { processData(decodedText); }
-            ).then(() => isScanning = true);
-        }
-    }).catch(err => {
-        alert("कॅमेरा एरर: " + err);
-    });
-}
-        try {
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                config,
-                (decodedText) => {
-                    processData(decodedText);
-                    // स्कॅन झाल्यावर बीप किंवा व्हायब्रेशन
-                    if(navigator.vibrate) navigator.vibrate(100);
-                }
-            );
-        } catch (err) {
-            alert("कॅमेरा सुरू होऊ शकला नाही. कृपया ब्राउझर सेटिंगमध्ये कॅमेरा Permission Allow करा आणि HTTPS वापरा.");
-        }
-    }
-
-    function processData(text) {
-       function processData(text) {
-        // पीएमजेएवाय डेटा वेगवेगळ्या चिन्हांनी विभागलेला असू शकतो ( , किंवा | )
-        // हा कोड दोन्ही ओळखून डेटा स्प्लिट करेल
-        let delimiter = text.includes('|') ? '|' : ',';
-        let parts = text.split(delimiter);
-
-        // डेटा ट्रिम (Trim) करून रिकाम्या जागा काढणे
-        let person = {
-            "PMJAY ID": parts[0]?.trim() || "NA",
-            "नाव": parts[1]?.trim() || "NA",
-            "पत्ता": (parts[2]?.trim() || "") + " " + (parts[3]?.trim() || ""),
-            "मोबाईल": parts[4]?.trim() || "NA",
-            "Family ID": parts[5]?.trim() || "NA"
-        };
-
-        // जर आयडी आधीच स्कॅन केला नसेल तरच ॲड करा
-        if (person["PMJAY ID"] !== "NA" && !masterData.some(d => d["PMJAY ID"] === person["PMJAY ID"])) {
-            masterData.push(person);
-            document.getElementById('count').innerText = masterData.length;
-            renderTable();
-            
-            // मोबाईलला फीडबॅक देण्यासाठी व्हायब्रेशन
-            if(navigator.vibrate) navigator.vibrate(100);
-        }
-    }
-        };
-
-        // डुप्लिकेट चेक
-        if (!masterData.some(d => d["PMJAY ID"] === person["PMJAY ID"])) {
-            masterData.push(person);
-            document.getElementById('count').innerText = masterData.length;
-            renderTable();
-        }
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('tbody');
-        if (masterData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="2" class="text-center text-muted">डेटा नाही</td></tr>`;
-            return;
-        }
+    async function initScanner() {
+        const startBtn = document.getElementById('start-btn');
         
-        tbody.innerHTML = masterData.map(d => `
-            <tr>
-                <td>
-                    <div class="fw-bold text-primary">${d["नाव"]}</div>
-                    <small class="text-muted">${d["PMJAY ID"]}</small>
-                </td>
-                <td>
-                    <div>${d["मोबाईल"]}</div>
-                    <small class="text-muted">${d["पत्ता"]}</small>
-                </td>
-            </tr>
-        `).reverse().join('');
-    }
+        // आधी कॅमेरा परमिशन मागूया
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop()); // परमिशन मिळाल्यावर तात्पुरता कॅमेरा बंद करा
+            
+            startBtn.style.display = 'none'; // बटण लपवा
+            
+            // आता स्कॅनर सुरू करा
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    alert("स्कॅन यशस्वी: " + decodedText);
+                },
+                (errorMessage) => {
+                    // स्कॅनिंग सुरू असताना एरर दुर्लक्षित करा
+                }
+            ).catch((err) => {
+                alert("कॅमेरा सुरू झाला नाही: " + err);
+                startBtn.style.display = 'block';
+            });
 
-    function downloadExcel() {
-        if(masterData.length === 0) return alert("आधी काही कार्ड स्कॅन करा!");
-        const ws = XLSX.utils.json_to_sheet(masterData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "PMJAY_List");
-        XLSX.writeFile(wb, "PMJAY_Report.xlsx");
-    }
-
-    function clearData() {
-        if(confirm("सर्व डेटा डिलीट करायचा का?")) {
-            masterData = [];
-            document.getElementById('count').innerText = "0";
-            renderTable();
+        } catch (error) {
+            alert("कृपया कॅमेरा परमिशन 'Allow' करा. एरर: " + error.message);
         }
     }
 </script>
-
 </body>
 </html>
